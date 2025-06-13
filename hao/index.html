@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>转网虚拟号状态查询</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.25);
+        }
+
+        .input-group input::placeholder {
+            color: #bdbdbd;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background-color: #3d8b40;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 1.5rem;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .list-group {
+            list-style: none;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-group-item span:first-child {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .list-group-item span:last-child {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(76, 175, 80, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message {
+            color: #f44336;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3>转网虚拟号状态查询</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="text" id="phone" placeholder="请输入手机号码" aria-label="手机号码">
+                </div>
+                <button class="btn" id="query-btn">查询</button>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <span>查询中...</span>
+                </div>
+                <div class="error-message" id="error-message"></div>
+                <div id="result" class="result" style="display: none;">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <span>手机号码</span>
+                            <span id="mobile-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>省份</span>
+                            <span id="area-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>城市</span>
+                            <span id="city-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>原运营商</span>
+                            <span id="oldIsp-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>新运营商</span>
+                            <span id="newIsp-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>是否虚拟号</span>
+                            <span id="isVirtuallyIsp-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>是否携号转网</span>
+                            <span id="isTransfer-result"></span>
+                        </li>
+                        <li class="list-group-item">
+                            <span>执行耗时</span>
+                            <span id="exec-time-result"></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('query-btn').addEventListener('click', queryMobileInfo);
+        document.getElementById('phone').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                queryMobileInfo();
+            }
+        });
+
+        function queryMobileInfo() {
+            const phone = document.getElementById('phone').value.trim();
+            const loading = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+            const result = document.getElementById('result');
+
+            errorMessage.classList.remove('show');
+            result.style.display = 'none';
+
+            loading.classList.add('show');
+
+            if (!/^1[3-9]\d{9}$/.test(phone)) {
+                loading.classList.remove('show');
+                errorMessage.textContent = '请输入有效的手机号码！';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            fetch('query.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `phone=${phone}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.classList.remove('show');
+                if (data.code === 200) {
+                    document.getElementById('mobile-result').textContent = data.data.mobile;
+                    document.getElementById('area-result').textContent = data.data.area;
+                    document.getElementById('city-result').textContent = data.data.city;
+                    document.getElementById('oldIsp-result').textContent = data.data.oldIsp;
+                    document.getElementById('newIsp-result').textContent = data.data.newIsp;
+                    document.getElementById('isVirtuallyIsp-result').textContent = 
+                        data.data.isVirtuallyIsp === 0 ? '否' : '是';
+                    document.getElementById('isTransfer-result').textContent = 
+                        data.data.isTransfer === 0 ? '未转网' : '已转网';
+                    document.getElementById('exec-time-result').textContent = `${data.exec_time} 秒`;
+                    
+                    result.style.display = 'block';
+                } else {
+                    errorMessage.textContent = data.msg || '查询失败，请稍后再试';
+                    errorMessage.classList.add('show');
+                }
+            })
+            .catch(error => {
+                loading.classList.remove('show');
+                console.error('Error:', error);
+                errorMessage.textContent = '查询失败，请检查网络连接';
+                errorMessage.classList.add('show');
+            });
+        }
+    </script>
+</body>
+</html>
